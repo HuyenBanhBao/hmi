@@ -63,6 +63,7 @@ const useWebSerial = () => {
             setError(`Lỗi kết nối: ${err.message}`);
             setIsConnected(false);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const disconnect = useCallback(async () => {

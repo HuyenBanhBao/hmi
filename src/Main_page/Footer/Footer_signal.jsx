@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { Box, Typography, Stack } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 
@@ -19,15 +18,24 @@ const StatusDot = ({ status }) => {
 };
 
 const SignalRow = ({ label, status }) => (
-    <Stack direction="row" spacing={1} alignItems="center">
+    <Stack
+        direction="row"
+        spacing={1}
+        alignItems="center"
+    >
         <StatusDot status={status} />
         <Typography sx={{ color: "#ddd", fontSize: 14 }}>{label}</Typography>
     </Stack>
 );
 
-const Footer_signal = ({ showConnect }) => {
+// =================================== FOOTER SIGNAL ===================================
+const Footer_signal = ({ gps, joystickData }) => {
     const theme = useTheme();
 
+    const gpsStatus = !gps ? "error" : gps.lat === 0 || gps.lon === 0 ? "boot" : "ok";
+    const joystickStatus = !joystickData ? "error" : joystickData.x === 0 && joystickData.y === 0 ? "boot" : "ok";
+
+    // =================================== RETURN ===================================
     return (
         <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
             <Typography
@@ -61,10 +69,22 @@ const Footer_signal = ({ showConnect }) => {
                                 p: 1,
                             }}
                         >
-                            <SignalRow label="Robot Link (test)" status="boot" />
-                            <SignalRow label="Telemetry (test)" status="error" />
-                            <SignalRow label="Command Link (test)" status="boot" />
-                            <SignalRow label="Heartbeat (test)" status="error" />
+                            <SignalRow
+                                label="Robot Link (test)"
+                                status="boot"
+                            />
+                            <SignalRow
+                                label="Telemetry (test)"
+                                status="error"
+                            />
+                            <SignalRow
+                                label="Command Link (test)"
+                                status="boot"
+                            />
+                            <SignalRow
+                                label="Heartbeat (test)"
+                                status="error"
+                            />
                         </Box>
 
                         <Box
@@ -75,10 +95,22 @@ const Footer_signal = ({ showConnect }) => {
                                 p: 1,
                             }}
                         >
-                            <SignalRow label="Jetson Computer (test)" status="boot" />
-                            <SignalRow label="STM32 Controller" status={showConnect ? "error" : "ok"} />
-                            <SignalRow label="Motor Driver (test)" status="boot" />
-                            <SignalRow label="Battery System (test)" status="boot" />
+                            <SignalRow
+                                label="Jetson Computer (test)"
+                                status="boot"
+                            />
+                            <SignalRow
+                                label="STM32 Controller"
+                                status="error"
+                            />
+                            <SignalRow
+                                label="Motor Driver (test)"
+                                status="boot"
+                            />
+                            <SignalRow
+                                label="Battery System (test)"
+                                status="boot"
+                            />
                         </Box>
                     </Box>
 
@@ -89,9 +121,22 @@ const Footer_signal = ({ showConnect }) => {
                             p: 1,
                         }}
                     >
-                        <SignalRow label="GPS" status={showConnect ? "error" : "ok"} />
-                        <SignalRow label="IMU (test)" status="boot" />
-                        <SignalRow label="Network (test)" status="boot" />
+                        <SignalRow
+                            label="GPS"
+                            status={gpsStatus}
+                        />
+                        <SignalRow
+                            label="Joy-Stick"
+                            status={joystickStatus}
+                        />
+                        <SignalRow
+                            label="IMU (test)"
+                            status="boot"
+                        />
+                        <SignalRow
+                            label="Network (test)"
+                            status="boot"
+                        />
                     </Box>
                 </Stack>
             </Box>

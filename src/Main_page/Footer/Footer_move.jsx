@@ -18,7 +18,7 @@ const BTN_STYLE = {
     },
 };
 
-const Footer_move = ({ gpsData, hexLog }) => {
+const Footer_move = () => {
     const theme = useTheme();
 
     // ==========================================================================
@@ -55,12 +55,18 @@ const Footer_move = ({ gpsData, hexLog }) => {
                         },
                     }}
                 >
-                    <Stack spacing={2} width="100%">
+                    <Stack
+                        spacing={2}
+                        width="100%"
+                    >
                         {/* HỆ THỐNG */}
                         <Box>
                             <Typography sx={{ mb: 1, color: "#ccc", fontWeight: 600 }}>HỆ THỐNG</Typography>
 
-                            <Stack direction="row" spacing={1}>
+                            <Stack
+                                direction="row"
+                                spacing={1}
+                            >
                                 <Button sx={BTN_STYLE}>Kết nối</Button>
                                 <Button sx={BTN_STYLE}>Khởi động lại Robot</Button>
                                 <Button sx={BTN_STYLE}>Khởi động lại Jetson</Button>
@@ -71,7 +77,10 @@ const Footer_move = ({ gpsData, hexLog }) => {
                         <Box>
                             <Typography sx={{ mb: 1, color: "#ccc", fontWeight: 600 }}>NHIỆM VỤ</Typography>
 
-                            <Stack direction="row" spacing={1}>
+                            <Stack
+                                direction="row"
+                                spacing={1}
+                            >
                                 <Button sx={BTN_STYLE}>Bắt đầu</Button>
                                 <Button sx={BTN_STYLE}>Tạm dừng</Button>
                                 <Button sx={BTN_STYLE}>Quay về gốc</Button>
@@ -82,8 +91,11 @@ const Footer_move = ({ gpsData, hexLog }) => {
                         <Box>
                             <Typography sx={{ mb: 1, color: "#ccc", fontWeight: 600 }}>DEBUG</Typography>
 
-                            <Stack direction="row" spacing={1}>
-                                <Btn_gps gpsData={gpsData} hexLog={hexLog} />
+                            <Stack
+                                direction="row"
+                                spacing={1}
+                            >
+                                <Btn_gps />
                                 <Button sx={BTN_STYLE}>Cảm biến</Button>
                                 <Button sx={BTN_STYLE}>Động cơ</Button>
                             </Stack>

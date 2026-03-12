@@ -24,12 +24,21 @@ const ADRRESS_MAP = {
 };
 
 // =================================== CONTENT ITEM ===================================
-const Content_item = ({ gpsData }) => {
+const Content_item = ({ gps }) => {
     const theme = useTheme();
     const [cameraOK, setCameraOK] = useState(false);
 
     return (
-        <Box sx={{ display: "flex", gap: 2, height: "50vh", minHeight: "50vh", mx: 2, my: 1 }}>
+        <Box
+            sx={{
+                display: "flex",
+                gap: 2,
+                height: "50vh",
+                minHeight: "50vh",
+                mx: 2,
+                my: 1,
+            }}
+        >
             {/* MAP */}
             {/* <Box sx={{ ...STYLE_CONTENT_ITEM, flex: 1, display: "flex" }}>
                 <Typography>MAP</Typography>
@@ -45,7 +54,7 @@ const Content_item = ({ gpsData }) => {
                     height: "100%",
                 }}
             >
-                <MapView gpsData={gpsData} />
+                <MapView gpsData={gps} />
 
                 <Box
                     sx={{
@@ -60,36 +69,72 @@ const Content_item = ({ gpsData }) => {
                         bgcolor: theme.hmi.colorGunmetalBlue,
                     }}
                 >
-                    <Box sx={{ width: 230, height: 250, px: 1, py: 0.5, color: theme.hmi.colorSnowGray }}>
-                        <Typography variant="span" sx={{ display: "block", fontWeight: 600 }}>
+                    <Box
+                        sx={{
+                            width: 230,
+                            height: 250,
+                            px: 1,
+                            py: 0.5,
+                            color: theme.hmi.colorSnowGray,
+                        }}
+                    >
+                        <Typography
+                            variant="span"
+                            sx={{ display: "block", fontWeight: 600 }}
+                        >
                             Tọa độ Robot:
                         </Typography>
-                        <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mt: 1 }}>
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: 1,
+                                mt: 1,
+                            }}
+                        >
                             {/* X Coordinate - Latitude */}
                             <Box sx={{ display: "flex", alignItems: "center" }}>
-                                <Typography variant="span" sx={{ display: "block", width: 40 }}>
+                                <Typography
+                                    variant="span"
+                                    sx={{ display: "block", width: 40 }}
+                                >
                                     Lat:
                                 </Typography>
-                                <Typography variant="span" sx={ADRRESS_MAP}>
-                                    {gpsData ? gpsData.lat.toFixed(7) : "---"}
+                                <Typography
+                                    variant="span"
+                                    sx={ADRRESS_MAP}
+                                >
+                                    {gps ? gps.lat.toFixed(7) : "---"}
                                 </Typography>
                             </Box>
                             {/* Y Coordinate - Longitude */}
                             <Box sx={{ display: "flex", alignItems: "center" }}>
-                                <Typography variant="span" sx={{ display: "block", width: 40 }}>
+                                <Typography
+                                    variant="span"
+                                    sx={{ display: "block", width: 40 }}
+                                >
                                     Lon:
                                 </Typography>
-                                <Typography variant="span" sx={ADRRESS_MAP}>
-                                    {gpsData ? gpsData.lon.toFixed(7) : "---"}
+                                <Typography
+                                    variant="span"
+                                    sx={ADRRESS_MAP}
+                                >
+                                    {gps ? gps.lon.toFixed(7) : "---"}
                                 </Typography>
                             </Box>
                             {/* Z Coordinate - Altitude */}
                             <Box sx={{ display: "flex", alignItems: "center" }}>
-                                <Typography variant="span" sx={{ display: "block", width: 40 }}>
+                                <Typography
+                                    variant="span"
+                                    sx={{ display: "block", width: 40 }}
+                                >
                                     Alt:
                                 </Typography>
-                                <Typography variant="span" sx={ADRRESS_MAP}>
-                                    {gpsData ? (gpsData.alt / 1000).toFixed(2) : "---"} m
+                                <Typography
+                                    variant="span"
+                                    sx={ADRRESS_MAP}
+                                >
+                                    {gps ? (gps.alt / 1000).toFixed(2) : "---"} m
                                 </Typography>
                             </Box>
                         </Box>

@@ -1,33 +1,34 @@
-import { Box, Typography, Button } from "@mui/material";
-import { alpha, useTheme } from "@mui/material/styles";
-import { useState, useEffect } from "react";
+import { Box, Typography } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import Content_item from "./Content_item";
 import Footer_item from "./Footer_item";
-import useWebSerial from "../hooks/useWebSerial";
+import { useState, useEffect } from "react";
 
 // =================================== MAIN CONTAINER ===================================
 const Main_page = () => {
     const theme = useTheme();
-    const { isConnected, gpsData, hexLog, error, connect, disconnect } = useWebSerial();
-    const [showConnect, setShowConnect] = useState(!isConnected);
-    // ---------------------------------- RENDERING ------------------------------------------
-    const handleConnect = async () => {
-        try {
-            await connect();
-            setShowConnect(false);
-        } catch (err) {
-            console.error("Lỗi kết nối:", err);
-        }
-    };
-
-    const handleDisconnect = async () => {
-        await disconnect();
-        setShowConnect(true);
-    };
+    const [gps, setGps] = useState(null);
 
     useEffect(() => {
-        setShowConnect(!isConnected);
-    }, [isConnected]);
+        const fetchGpsData = async () => {
+            try {
+                const response = await fetch("http://localhost:5001/gps");
+
+                if (!response.ok) return;
+
+                const data = await response.json();
+                setGps(data);
+            } catch (error) {
+                console.error("Failed to fetch GPS data:", error);
+            }
+        };
+
+        fetchGpsData();
+
+        const interval = setInterval(fetchGpsData, 500); // cập nhật mỗi 500ms
+
+        return () => clearInterval(interval);
+    }, []);
 
     return (
         <Box
@@ -66,77 +67,6 @@ const Main_page = () => {
                         PHẦN MỀM GIÁM SÁT VÀ ĐIỀU KHIỂN TRUNG TÂM
                     </Typography>
 
-                    {/* BTN CONNECT */}
-                    {showConnect ? (
-                        <Button
-                            onClick={handleConnect}
-                            sx={{
-                                position: "absolute",
-                                right: 16,
-                                top: "50%",
-                                transform: "translateY(-50%)",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1,
-                                bgcolor: theme.hmi.primaryColorHvqp,
-                                px: 2,
-                                py: 1,
-                                borderRadius: "4px",
-                                border: `1px solid ${theme.hmi.colorSnowGray}`,
-                                color: theme.hmi.colorSnowGray,
-                                fontSize: "16px",
-                                fontWeight: 600,
-                                cursor: "pointer",
-                                "&:hover": {
-                                    bgcolor: "#5a7c8e",
-                                },
-                            }}
-                        >
-                            CONNECT GPS
-                        </Button>
-                    ) : (
-                        <Button
-                            onClick={handleDisconnect}
-                            sx={{
-                                position: "absolute",
-                                right: 16,
-                                top: "50%",
-                                transform: "translateY(-50%)",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1,
-                                bgcolor: theme.hmi.colorBtnOrange,
-                                px: 2,
-                                py: 1,
-                                borderRadius: "4px",
-                                border: `1px solid ${theme.hmi.colorSnowGray}`,
-                                color: theme.hmi.colorSnowGray,
-                                fontSize: "16px",
-                                fontWeight: 600,
-                                cursor: "pointer",
-                                "&:hover": {
-                                    bgcolor: alpha(theme.hmi.colorBtnOrange, 0.8),
-                                },
-                            }}
-                        >
-                            DIS GPS
-                        </Button>
-                    )}
-                    {error && (
-                        <Typography
-                            sx={{
-                                position: "absolute",
-                                right: 200,
-                                top: "50%",
-                                transform: "translateY(-50%)",
-                                color: theme.hmi.colorError,
-                                fontSize: "12px",
-                            }}
-                        >
-                            {error}
-                        </Typography>
-                    )}
-                    {/* BTN CONNECT */}
                     <Box
                         sx={{
                             position: "absolute",
@@ -165,12 +95,12 @@ const Main_page = () => {
                 {/* ---------------------------------------- */}
                 {/* ============= MAIN CONTENT ============= */}
                 {/* ---------------------------------------- */}
-                <Content_item gpsData={gpsData} />
+                <Content_item gps={gps} />
 
                 {/* ---------------------------------------- */}
                 {/* ============ FOOTER CONTENT ============ */}
                 {/* ---------------------------------------- */}
-                <Footer_item gpsData={gpsData} hexLog={hexLog} showConnect={showConnect} />
+                <Footer_item gps={gps} />
             </Box>
         </Box>
     );

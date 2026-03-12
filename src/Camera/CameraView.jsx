@@ -1,48 +1,27 @@
-import { useEffect, useRef } from "react";
 import { Box } from "@mui/material";
+import { useEffect } from "react";
 
 const CameraView = ({ onStatusChange }) => {
-    const videoRef = useRef(null);
+    const url = "http://localhost:5002/video";
 
     useEffect(() => {
-        const startCamera = async () => {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: true,
-                    audio: false,
-                });
+        const img = new Image();
 
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                }
-
-                // camera OK
-                onStatusChange?.(true);
-            } catch (err) {
-                console.error("Camera error:", err);
-
-                // camera FAIL
-                onStatusChange?.(false);
-            }
+        img.onload = () => {
+            onStatusChange?.(true);
         };
 
-        startCamera();
-
-        return () => {
-            if (videoRef.current?.srcObject) {
-                const tracks = videoRef.current.srcObject.getTracks();
-                tracks.forEach((track) => track.stop());
-            }
+        img.onerror = () => {
+            onStatusChange?.(false);
         };
+
+        img.src = url;
     }, [onStatusChange]);
 
     return (
         <Box
-            component="video"
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
+            component="img"
+            src={url}
             sx={{
                 width: "100%",
                 height: "100%",

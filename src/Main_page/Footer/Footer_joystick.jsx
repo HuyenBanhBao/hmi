@@ -12,9 +12,26 @@ const STYLE_CONTENT_ITEM = {
 };
 
 // =================================== MAIN COMPONENT ===================================
-const Footer_joystick = () => {
+const Footer_joystick = ({ joystickData, CENTER_VALUE, THRESHOLD }) => {
     const [dir, setDir] = useState(null);
     const theme = useTheme();
+
+    const getButtonColor = (direction) => {
+        const { x, y } = joystickData;
+        switch (direction) {
+            case "DOWN":
+                return y < CENTER_VALUE - THRESHOLD ? "yellow" : "default";
+            case "UP":
+                return y > CENTER_VALUE + THRESHOLD ? "yellow" : "default";
+            case "LEFT":
+                return x < CENTER_VALUE - THRESHOLD ? "yellow" : "default";
+            case "RIGHT":
+                return x > CENTER_VALUE + THRESHOLD ? "yellow" : "default";
+            default:
+                return "default";
+        }
+    };
+
     return (
         <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
             <Typography
@@ -57,30 +74,81 @@ const Footer_joystick = () => {
                 >
                     <Box />
 
-                    <Button variant="contained" onMouseDown={() => setDir("UP")} onMouseUp={() => setDir(null)}>
+                    <Button
+                        variant="contained"
+                        sx={{ bgcolor: getButtonColor("UP") }}
+                        onMouseDown={() => setDir("UP")}
+                        onMouseUp={() => setDir(null)}
+                    >
                         ↑
                     </Button>
 
                     <Box />
 
-                    <Button variant="contained" onMouseDown={() => setDir("LEFT")} onMouseUp={() => setDir(null)}>
+                    <Button
+                        variant="contained"
+                        sx={{ bgcolor: getButtonColor("LEFT") }}
+                        onMouseDown={() => setDir("LEFT")}
+                        onMouseUp={() => setDir(null)}
+                    >
                         ←
                     </Button>
 
                     <Box />
 
-                    <Button variant="contained" onMouseDown={() => setDir("RIGHT")} onMouseUp={() => setDir(null)}>
+                    <Button
+                        variant="contained"
+                        sx={{ bgcolor: getButtonColor("RIGHT") }}
+                        onMouseDown={() => setDir("RIGHT")}
+                        onMouseUp={() => setDir(null)}
+                    >
                         →
                     </Button>
 
                     <Box />
 
-                    <Button variant="contained" onMouseDown={() => setDir("DOWN")} onMouseUp={() => setDir(null)}>
+                    <Button
+                        variant="contained"
+                        sx={{ bgcolor: getButtonColor("DOWN") }}
+                        onMouseDown={() => setDir("DOWN")}
+                        onMouseUp={() => setDir(null)}
+                    >
                         ↓
                     </Button>
 
                     <Box />
                 </Box>
+            </Box>
+            {/* --------------- DISPLAY X AND Y VALUES --------------- */}
+            <Box
+                sx={{
+                    mt: 2,
+                    display: "flex",
+                    justifyContent: "space-around",
+                    alignItems: "center",
+                    bgcolor: theme.hmi.colorGunmetalBlue,
+                    borderRadius: "8px",
+                    p: 2,
+                }}
+            >
+                <Typography
+                    sx={{
+                        fontWeight: 600,
+                        fontSize: "16px",
+                        color: theme.hmi.colorSnowGray,
+                    }}
+                >
+                    X: {joystickData.x}
+                </Typography>
+                <Typography
+                    sx={{
+                        fontWeight: 600,
+                        fontSize: "16px",
+                        color: theme.hmi.colorSnowGray,
+                    }}
+                >
+                    Y: {joystickData.y}
+                </Typography>
             </Box>
         </Box>
     );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Box, Typography, Button } from "@mui/material";
 import { alpha, useTheme } from "@mui/material/styles";
 import Drawer from "@mui/material/Drawer";
@@ -30,21 +30,67 @@ const fixStatus = (v) => {
     }
 };
 
-// ============================================ MAIN COMPONENTS ============================================
-const Btn_gps = ({ gpsData, hexLog }) => {
+const Btn_gps = () => {
     const theme = useTheme();
-
+    const bottomRef = useRef(null);
     const [open, setOpen] = useState(false);
+    const [gps, setGps] = useState(null);
+    const [hexLog, setHexLog] = useState([]);
+    const [autoScroll, setAutoScroll] = useState(true);
+
+    const logRef = useRef(null);
+
+    // ================= FETCH GPS + HEX =================
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [gpsRes, logRes] = await Promise.all([
+                    fetch("http://localhost:5001/gps"),
+                    fetch("http://localhost:5001/hexlog"),
+                ]);
+
+                if (gpsRes.ok) {
+                    const gpsData = await gpsRes.json();
+                    setGps(gpsData);
+                }
+
+                if (logRes.ok) {
+                    const logData = await logRes.json();
+                    setHexLog(logData);
+                }
+            } catch (error) {
+                console.error("Failed to fetch GPS/HEX data:", error);
+            }
+        };
+
+        fetchData();
+        const interval = setInterval(fetchData, 500);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    // ================= AUTO SCROLL =================
+    useEffect(() => {
+        if (autoScroll && bottomRef.current) {
+            requestAnimationFrame(() => {
+                bottomRef.current.scrollIntoView({ behavior: "auto" });
+            });
+        }
+    }, [hexLog, autoScroll]);
 
     const toggleDrawer = (newOpen) => () => {
         setOpen(newOpen);
     };
 
-    // Giá trị các trường GPS để hiển thị
+    // GPS fields
     const GPS_FIELDS = [
         { label: "Latitude", key: "lat", format: (v) => `${v.toFixed(7)}°` },
         { label: "Longitude", key: "lon", format: (v) => `${v.toFixed(7)}°` },
-        { label: "Altitude", key: "alt", format: (v) => `${(v / 1000).toFixed(2)} m` },
+        {
+            label: "Altitude",
+            key: "alt",
+            format: (v) => `${(v / 1000).toFixed(2)} m`,
+        },
         { label: "Satellites", key: "sat" },
         { label: "Accuracy", key: "meanAccuracy", format: (v) => `${v} m` },
         { label: "RTK Status", key: "rtk", format: (v) => rtkStatus(v) },
@@ -52,23 +98,38 @@ const Btn_gps = ({ gpsData, hexLog }) => {
     ];
 
     const renderValue = (field, gpsData) => {
-        if (!gpsData || gpsData[field.key] === undefined) return "---";
-
         const value = gpsData[field.key];
-
         return field.format ? field.format(value) : value;
     };
 
-    // ============================================ RETURN ============================================
+    const handleScroll = () => {
+        const el = logRef.current;
+        if (!el) return;
+
+        const threshold = 50; // px
+        const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+
+        setAutoScroll(isNearBottom);
+    };
+
     return (
         <>
-            <Button sx={BTN_STYLE} onClick={toggleDrawer(true)}>
+            <Button
+                sx={BTN_STYLE}
+                onClick={toggleDrawer(true)}
+            >
                 GPS
             </Button>
 
-            {/* GPS Debug Drawer */}
-            <Drawer anchor="right" open={open} onClose={toggleDrawer(false)}>
-                <Box sx={{ width: 650, height: "100%" }} role="presentation">
+            <Drawer
+                anchor="right"
+                open={open}
+                onClose={toggleDrawer(false)}
+            >
+                <Box
+                    sx={{ width: 650, height: "100%" }}
+                    role="presentation"
+                >
                     <Box
                         sx={{
                             p: 2,
@@ -79,11 +140,14 @@ const Btn_gps = ({ gpsData, hexLog }) => {
                             flexDirection: "column",
                         }}
                     >
-                        {/* Tiêu đề */}
-                        <Typography variant="h6" sx={{ mb: 2, color: "#ccc", fontWeight: 600 }}>
+                        {/* TITLE */}
+                        <Typography
+                            variant="h6"
+                            sx={{ mb: 2, color: "#ccc", fontWeight: 600 }}
+                        >
                             GPS Debug
                         </Typography>
-                        {/* Nội dung debug GPS */}
+
                         <Box
                             sx={{
                                 flex: 1,
@@ -94,102 +158,124 @@ const Btn_gps = ({ gpsData, hexLog }) => {
                                 flexDirection: "column",
                                 gap: 2,
                                 bgcolor: theme.hmi.colorMidnightBlue,
-                                overflowY: "auto",
-                                scrollbarWidth: "thin",
-                                "&::-webkit-scrollbar": {
-                                    width: "6px",
-                                },
-                                "&::-webkit-scrollbar-thumb": {
-                                    background: "#6b7c8c",
-                                    borderRadius: "4px",
-                                },
+                                overflow: "hidden",
                             }}
                         >
-                            {/* GPS Data Display */}
-                            <Box sx={{}}>
-                                <Typography sx={{ mb: 1, color: "#00ff00", fontWeight: 600, fontSize: "12px" }}>
+                            {/* GPS DATA */}
+                            <Box sx={{ flexShrink: 0 }}>
+                                <Typography
+                                    sx={{
+                                        mb: 1,
+                                        color: "#00ff00",
+                                        fontWeight: 600,
+                                        fontSize: "12px",
+                                    }}
+                                >
                                     ================= GPS DATA =================
                                 </Typography>
 
-                                {GPS_FIELDS.map((field) => (
-                                    <Box
-                                        key={field.key}
-                                        sx={{
-                                            display: "flex",
-                                            borderBottom: `1px solid ${alpha(theme.hmi.colorPaleSky, 0.2)}`,
-                                            py: 0.5,
-                                        }}
-                                    >
-                                        <Typography
-                                            variant="span"
+                                {gps ? (
+                                    GPS_FIELDS.map((field) => (
+                                        <Box
+                                            key={field.key}
                                             sx={{
-                                                color: theme.hmi.colorLemonChiffon,
-                                                width: 150,
-                                                fontSize: "15px",
+                                                display: "flex",
+                                                borderBottom: `1px solid ${alpha(theme.hmi.colorPaleSky, 0.2)}`,
+                                                py: 0.5,
                                             }}
                                         >
-                                            {field.label}
-                                        </Typography>
-                                        <Typography sx={{ color: theme.hmi.colorLemonChiffon }}>
-                                            : {renderValue(field, gpsData)}
-                                        </Typography>
-                                    </Box>
-                                ))}
+                                            <Typography
+                                                sx={{
+                                                    color: theme.hmi.colorLemonChiffon,
+                                                    width: 150,
+                                                    fontSize: "15px",
+                                                }}
+                                            >
+                                                {field.label}
+                                            </Typography>
+
+                                            <Typography
+                                                sx={{
+                                                    color: theme.hmi.colorLemonChiffon,
+                                                }}
+                                            >
+                                                : {renderValue(field, gps)}
+                                            </Typography>
+                                        </Box>
+                                    ))
+                                ) : (
+                                    <Typography sx={{ color: "#999" }}>Waiting GPS...</Typography>
+                                )}
                             </Box>
 
-                            {/* HEX Log Display */}
-                            <Box sx={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
-                                <Box>
-                                    <Typography sx={{ mb: 1, color: "#00ff00", fontWeight: 600, fontSize: "12px" }}>
-                                        ================= HEX LOG =================
-                                    </Typography>
-                                </Box>
+                            {/* HEX LOG */}
+                            <Box
+                                sx={{
+                                    flex: 1,
+                                    minHeight: 0,
+                                    display: "flex",
+                                    flexDirection: "column",
+                                }}
+                            >
+                                <Typography
+                                    sx={{
+                                        mb: 1,
+                                        color: "#00ff00",
+                                        fontWeight: 600,
+                                        fontSize: "12px",
+                                    }}
+                                >
+                                    ================= HEX LOG =================
+                                </Typography>
+
                                 <Box
+                                    ref={logRef}
+                                    onScroll={handleScroll}
                                     sx={{
                                         flex: 1,
                                         overflowY: "auto",
                                         display: "flex",
                                         flexDirection: "column",
-                                        gap: 1,
-                                        /* Scrollbar */
+                                        gap: 0.5,
                                         "&::-webkit-scrollbar": {
                                             width: "8px",
-                                        },
-                                        "&::-webkit-scrollbar-track": {
-                                            background: "#0a0a0a",
-                                            borderRadius: "10px",
                                         },
                                         "&::-webkit-scrollbar-thumb": {
                                             background: "#FB8F2C",
                                             borderRadius: "10px",
                                         },
-                                        "&::-webkit-scrollbar-thumb:hover": {
-                                            background: "#FB8F2C",
-                                        },
 
-                                        /* Firefox */
                                         scrollbarWidth: "thin",
                                         scrollbarColor: "#FB8F2C #0a0a0a",
                                     }}
                                 >
-                                    {hexLog && hexLog.length > 0 ? (
-                                        hexLog.map((line, idx) => (
-                                            <Typography
-                                                key={idx}
-                                                variant="span"
-                                                sx={{
-                                                    display: "block",
-                                                    color: theme.hmi.colorLemonChiffon,
-                                                    fontSize: "14px",
-                                                    fontFamily: "monospace",
-                                                    lineHeight: 1.4,
-                                                }}
-                                            >
-                                                {line}
-                                            </Typography>
-                                        ))
+                                    {hexLog.length > 0 ? (
+                                        <>
+                                            {hexLog.map((line, idx) => (
+                                                <Typography
+                                                    key={idx}
+                                                    sx={{
+                                                        color: theme.hmi.colorLemonChiffon,
+                                                        fontSize: "13px",
+                                                        fontFamily: "monospace",
+                                                        lineHeight: 1.4,
+                                                        whiteSpace: "pre-wrap",
+                                                    }}
+                                                >
+                                                    {line}
+                                                </Typography>
+                                            ))}
+
+                                            {/* Anchor để scroll xuống cuối */}
+                                            <div ref={bottomRef} />
+                                        </>
                                     ) : (
-                                        <Typography sx={{ color: "#999", fontSize: "11px" }}>
+                                        <Typography
+                                            sx={{
+                                                color: "#999",
+                                                fontSize: "11px",
+                                            }}
+                                        >
                                             Chờ dữ liệu từ COM port...
                                         </Typography>
                                     )}
